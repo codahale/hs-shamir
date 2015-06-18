@@ -1,0 +1,26 @@
+name:                shamir
+version:             0.1.0.0
+synopsis:            Shamir's Secret Sharing Scheme
+description:         An implementation of Shamir's Secret Sharing Scheme over GF(256).
+homepage:            https://github.com/codahale/hs-shamir
+license:             Apache-2.0
+license-file:        LICENSE
+author:              Coda Hale
+maintainer:          coda.hale@gmail.com
+copyright:           Coda Hale, 2015
+category:            Cryptography
+build-type:          Simple
+cabal-version:       >=1.10
+
+library
+  exposed-modules:     Shamir
+  build-depends:       base >=4.8 && <4.9
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+
+test-suite doctests
+  type:                exitcode-stdio-1.0
+  ghc-options:         -threaded
+  main-is:             doctests.hs
+  build-depends:       base, doctest >= 0.8
+  default-language:    Haskell2010
