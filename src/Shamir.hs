@@ -1,36 +1,33 @@
 module Shamir () where
 
-import Data.Array.Base
-import Data.Bits
-import Data.Word
+import           Data.Array.Base
+import           Data.Bits
+import qualified Data.ByteString as BL
+import           Data.Word
 
-type Element = Word8
 
-type Polynomial = [Element]
+type Polynomial = BL.ByteString
 
 -- |
 -- Evaluate the GF(256) polynomial.
 --
--- >>> gfEval 2 [1, 0, 2, 3]
+-- >>> gfEval 2 $ BL.pack [1, 0, 2, 3]
 -- 17
-gfEval :: Element -> Polynomial -> Element
+gfEval :: Word8 -> Polynomial -> Word8
 {-# INLINE gfEval #-}
 gfEval x =
-    foldr eval 0
-  where
-    eval v res =
-        gfMul res x `xor` v
+    BL.foldr (\v res -> xor v $ gfMul res x) 0
 
 -- |
 -- Multiple two GF(256) elements.
 --
 -- >>> gfMul 90 21
 -- 254
-gfMul :: Element -> Element -> Element
+gfMul :: Word8 -> Word8 -> Word8
 {-# INLINE gfMul #-}
 gfMul 0 _  = 0
 gfMul _ 0  = 0
-gfMul e a = gfExp ! fromIntegral ((x + y) `mod` 255) :: Element
+gfMul e a = gfExp ! fromIntegral ((x + y) `mod` 255) :: Word8
   where
     x =
         fromIntegral
@@ -44,7 +41,7 @@ gfMul e a = gfExp ! fromIntegral ((x + y) `mod` 255) :: Element
 --
 -- >>> gfDiv 90 21
 -- 189
-gfDiv :: Element -> Element -> Element
+gfDiv :: Word8 -> Word8 -> Word8
 {-# INLINE gfDiv #-}
 gfDiv 0 _ = 0
 gfDiv e a =
@@ -56,7 +53,7 @@ gfDiv e a =
 
 -- 0x11b prime polynomial and 0x03 as generator
 
-gfExp :: UArray Element Element
+gfExp :: UArray Word8 Word8
 gfExp =
     array
         (0, 255)
@@ -317,7 +314,7 @@ gfExp =
         , (254, 246)
         , (255, 1)]
 
-gfLog :: UArray Element Element
+gfLog :: UArray Word8 Word8
 gfLog =
     array
         (0, 255)
