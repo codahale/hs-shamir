@@ -23,33 +23,42 @@ gfEval x =
 --
 -- >>> gfMul 90 21
 -- 254
+-- >>> gfMul 0 21
+-- 0
+-- >>> gfMul 133 5
+-- 167
 gfMul :: Word8 -> Word8 -> Word8
 {-# INLINE gfMul #-}
 gfMul 0 _  = 0
 gfMul _ 0  = 0
 gfMul e a = gfExp ! fromIntegral ((x + y) `mod` 255) :: Word8
   where
-    x =
-        fromIntegral
-            (gfLog ! e) :: Int
-    y =
-        fromIntegral
-            (gfLog ! a) :: Int
+    x = fromIntegral (gfLog ! e) :: Int
+    y = fromIntegral (gfLog ! a) :: Int
 
 -- |
 -- Divide two GF(256) elements.
 --
 -- >>> gfDiv 90 21
 -- 189
+-- >>> gfDiv 0 21
+-- 0
+-- >>> gfDiv 6 55
+-- 151
+-- >>> gfDiv 22 192
+-- 138
 gfDiv :: Word8 -> Word8 -> Word8
 {-# INLINE gfDiv #-}
 gfDiv 0 _ = 0
+gfDiv _ 0 = undefined
 gfDiv e a =
     if p < 0
         then p + 255
         else p
   where
-    p = gfExp ! (gfLog ! e - gfLog ! a) `mod` 255
+    p = gfExp ! fromIntegral ((x - y) `mod` 255) :: Word8
+    x = fromIntegral (gfLog ! e) :: Int
+    y = fromIntegral (gfLog ! a) :: Int
 
 -- 0x11b prime polynomial and 0x03 as generator
 
