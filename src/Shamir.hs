@@ -18,11 +18,12 @@ import           System.Entropy
 -- [1,2,3,4,5]
 combine :: Map.Map Word8 BL.ByteString -> BL.ByteString
 combine shares =
-    BL.pack $ map gfYIntercept points
-    where
-        keys = cycle $ Map.keys shares
-        values = Map.elems shares
-        points = map (zip keys . BL.unpack) $ BL.transpose values
+    BL.pack $
+    map
+        (gfYIntercept .
+         zip (cycle $ Map.keys shares) .
+         BL.unpack)
+        (BL.transpose $ Map.elems shares)
 
 -- |
 -- Splits a secret into N shares, of which K are required to re-combine. Returns
