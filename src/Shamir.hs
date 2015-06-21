@@ -4,8 +4,23 @@ import           Data.Array.Base
 import           Data.Bits
 import qualified Data.ByteString as BL
 import           Data.Word
+import           System.Entropy
 
 
+-- |
+-- Generate a random n-degree polynomial.
+--
+-- >>> let poly = gfGenerate 212 10
+-- >>> fmap BL.head poly
+-- 212
+-- >>> fmap ((== 0) . BL.last) poly
+-- False
+gfGenerate :: Word8 -> Word8 -> IO BL.ByteString
+gfGenerate y n = do
+    p <- getEntropy ((fromIntegral n :: Int)-1)
+    if BL.last p == 0 -- the Nth term can't be zero
+        then gfGenerate y n
+        else return $ BL.cons y p
 
 -- |
 -- Evaluate the GF(256) polynomial.
