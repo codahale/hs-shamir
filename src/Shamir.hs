@@ -6,14 +6,13 @@ import qualified Data.ByteString as BL
 import           Data.Word
 
 
-type Polynomial = BL.ByteString
 
 -- |
 -- Evaluate the GF(256) polynomial.
 --
 -- >>> gfEval 2 $ BL.pack [1, 0, 2, 3]
 -- 17
-gfEval :: Word8 -> Polynomial -> Word8
+gfEval :: Word8 -> BL.ByteString -> Word8
 {-# INLINE gfEval #-}
 gfEval x =
     BL.foldr (\v res -> xor v $ gfMul res x) 0
