@@ -96,10 +96,11 @@ gfMul :: Word8 -> Word8 -> Word8
 {-# INLINE gfMul #-}
 gfMul 0 _  = 0
 gfMul _ 0  = 0
-gfMul e a = gfExp ! fromIntegral ((x + y) `mod` 255) :: Word8
+gfMul e a =
+    gfExp ! fromIntegral ((x + y) `mod` 255) :: Word8
   where
-    x = fromIntegral (gfLog ! e) :: Int
-    y = fromIntegral (gfLog ! a) :: Int
+    x = gfLog ! e
+    y = gfLog ! a
 
 -- |
 -- Divide two GF(256) elements.
@@ -117,13 +118,10 @@ gfDiv :: Word8 -> Word8 -> Word8
 gfDiv 0 _ = 0
 gfDiv _ 0 = undefined
 gfDiv e a =
-    if p < 0
-        then p + 255
-        else p
+    gfExp ! fromIntegral ((x - y) `mod` 255) :: Word8
   where
-    p = gfExp ! fromIntegral ((x - y) `mod` 255) :: Word8
-    x = fromIntegral (gfLog ! e) :: Int
-    y = fromIntegral (gfLog ! a) :: Int
+    x = gfLog ! e
+    y = gfLog ! a
 
 -- 0x11b prime polynomial and 0x03 as generator
 
@@ -154,7 +152,7 @@ gfExp =
         0xc7, 0x52, 0xf6, 0x01
         ]
 
-gfLog :: UArray Word8 Word8
+gfLog :: UArray Word8 Int
 gfLog =
     listArray (0, 255) [
         0x00, 0x00, 0x19, 0x01, 0x32, 0x02, 0x1a, 0xc6, 0x4b, 0xc7, 0x1b, 0x68,
