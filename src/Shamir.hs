@@ -1,11 +1,62 @@
-module Shamir () where
+module Shamir (split, combine) where
 
 import           Data.Array.Base
 import           Data.Bits
 import qualified Data.ByteString as BL
+import qualified Data.Map.Strict as Map
 import           Data.Word
 import           System.Entropy
 
+-- |
+-- Combines a map of share IDs to share values into the original secret.
+--
+-- >>> let a = (1 :: Word8, BL.pack [64, 163, 216, 189, 193])
+-- >>> let b = (3 :: Word8, BL.pack [194, 250, 117, 212, 82])
+-- >>> let c = (5 :: Word8, BL.pack [95, 17, 153, 111, 252])
+-- >>> let shares = Map.fromList [a, b, c]
+-- >>> BL.unpack $ combine shares
+-- [1,2,3,4,5]
+combine :: Map.Map Word8 BL.ByteString -> BL.ByteString
+combine shares =
+    BL.pack $ map gfYIntercept points
+    where
+        keys = cycle $ Map.keys shares
+        values = Map.elems shares
+        points = map (zip keys . BL.unpack) $ BL.transpose values
+
+-- |
+-- Splits a secret into N shares, of which K are required to re-combine. Returns
+-- a map of share IDs to share values.
+--
+-- >>> let secret = Data.ByteString.Char8.pack "hello world"
+-- >>> let shares = split 5 3 secret
+-- >>> let trim = Map.filterWithKey (\k _ -> k < 4)
+-- >>> fmap (combine . trim) shares
+-- "hello world"
+split :: Word8 -> Word8 -> BL.ByteString -> IO (Map.Map Word8 BL.ByteString)
+split n k secret = do
+    polys <- sequence [gfGenerate b (k - 1) | b <- BL.unpack secret]
+    return $ Map.fromList (map (encode polys) [1..n])
+    where
+        encode polys i = (i, BL.pack (map (gfEval i) polys))
+
+-- |
+-- Interpolates a list of (X, Y) points, returning the Y value at zero.
+--
+-- >>> gfYIntercept [(1, 1), (2, 2), (3, 3)]
+-- 0
+-- >>> gfYIntercept [(1, 80), (2, 90), (3, 20)]
+-- 30
+-- >>> gfYIntercept [(1, 43), (2, 22), (3, 86)]
+-- 107
+gfYIntercept :: [(Word8,Word8)] -> Word8
+gfYIntercept points =
+    foldl (\v (i,(ax,ay)) -> xor v $ gfMul (weight i ax) ay) 0 enumerated
+    where
+        weight i ax = foldl (inner ax) 1 (others i)
+        inner ax v (bx, _) = gfMul v $ gfDiv bx (xor ax bx)
+        enumerated = zip [(0::Word8)..] points
+        others i = map snd (filter ((/= i) . fst) enumerated)
 
 -- |
 -- Generate a random n-degree polynomial.
