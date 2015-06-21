@@ -53,12 +53,11 @@ split n k secret = do
 -- 107
 gfYIntercept :: [(Word8,Word8)] -> Word8
 gfYIntercept points =
-    foldl (\v (i,(ax,ay)) -> xor v $ gfMul (weight i ax) ay) 0 enumerated
+    foldl outer 0 points
     where
-        weight i ax = foldl (inner ax) 1 (others i)
-        inner ax v (bx, _) = gfMul v $ gfDiv bx (xor ax bx)
-        enumerated = zip [(0::Word8)..] points
-        others i = map snd (filter ((/= i) . fst) enumerated)
+        weight v ax = foldl (inner ax) 1 (filter (/= v) points)
+        inner ax v (bx, _) = gfMul v (gfDiv bx (ax `xor` bx))
+        outer v (ax,ay) = v `xor` gfMul (weight (ax,ay) ax) ay
 
 -- |
 -- Generate a random n-degree polynomial.
