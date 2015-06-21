@@ -21,9 +21,10 @@ combine shares =
     BL.pack $
     map
         (gfYIntercept .
-         zip (cycle $ Map.keys shares) .
+         zip (cycle (Map.keys shares)) .
          BL.unpack)
-        (BL.transpose $ Map.elems shares)
+        (BL.transpose
+             (Map.elems shares))
 
 -- |
 -- Splits a secret into N shares, of which K are required to re-combine. Returns
