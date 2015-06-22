@@ -35,8 +35,12 @@ combine shares =
 -- >>> fmap (combine . trim) shares
 -- "hello world"
 split :: Word8 -> Word8 -> BL.ByteString -> IO (Map.Map Word8 BL.ByteString)
-split n k secret = do
-    polys <- sequence [gfGenerate b (k - 1) | b <- BL.unpack secret]
+split = gfSplit getEntropy
+
+-- | Pure function to split a secret.
+gfSplit :: (Monad m) => (Int -> m BL.ByteString) -> Word8 -> Word8 -> BL.ByteString -> m (Map.Map Word8 BL.ByteString)
+gfSplit gen n k secret = do
+    polys <- sequence [gfGenerate gen b (k - 1) | b <- BL.unpack secret]
     return $ Map.fromList $ map (encode polys) [1..n]
     where
         encode polys i = (i, BL.pack $ map (gfEval i) polys)
@@ -61,16 +65,14 @@ gfYIntercept points =
 -- |
 -- Generate a random n-degree polynomial.
 --
--- >>> let poly = gfGenerate 212 10
--- >>> fmap BL.head poly
--- 212
--- >>> fmap ((== 0) . BL.last) poly
--- False
-gfGenerate :: Word8 -> Word8 -> IO BL.ByteString
-gfGenerate y n = do
-    p <- getEntropy $ (fromIntegral n :: Int) - 1
+-- >>> let gen n = Just (BL.pack $ take n $ repeat 65)
+-- >>> gfGenerate gen 212 5
+-- Just "\212AAAA"
+gfGenerate :: (Monad m) => (Int -> m BL.ByteString) -> Word8 -> Word8 -> m BL.ByteString
+gfGenerate gen y n = do
+    p <- gen $ (fromIntegral n :: Int) - 1
     if BL.last p == 0 -- the Nth term can't be zero
-        then gfGenerate y n
+        then gfGenerate gen y n
         else return $ BL.cons y p
 
 -- |
