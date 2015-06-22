@@ -54,9 +54,9 @@ gfYIntercept :: [(Word8,Word8)] -> Word8
 gfYIntercept points =
     foldl outer 0 points
     where
-        weight v ax = foldl (inner ax) 1 (filter (/= v) points)
-        inner ax v (bx, _) = gfMul v (gfDiv bx (ax `xor` bx))
-        outer v (ax,ay) = v `xor` gfMul (weight (ax,ay) ax) ay
+        weight v ax = foldl (inner ax) 1 $ filter (/= v) points
+        inner ax v (bx, _) = gfMul v $ gfDiv bx $ xor ax bx
+        outer v (ax,ay) = xor v $ gfMul ay $ weight (ax,ay) ax
 
 -- |
 -- Generate a random n-degree polynomial.
