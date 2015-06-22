@@ -21,10 +21,9 @@ combine shares =
     BL.pack $
     map
         (gfYIntercept .
-         zip (cycle (Map.keys shares)) .
+         zip (cycle $ Map.keys shares) .
          BL.unpack)
-        (BL.transpose
-             (Map.elems shares))
+        (BL.transpose $ Map.elems shares)
 
 -- |
 -- Splits a secret into N shares, of which K are required to re-combine. Returns
@@ -38,9 +37,9 @@ combine shares =
 split :: Word8 -> Word8 -> BL.ByteString -> IO (Map.Map Word8 BL.ByteString)
 split n k secret = do
     polys <- sequence [gfGenerate b (k - 1) | b <- BL.unpack secret]
-    return $ Map.fromList (map (encode polys) [1..n])
+    return $ Map.fromList $ map (encode polys) [1..n]
     where
-        encode polys i = (i, BL.pack (map (gfEval i) polys))
+        encode polys i = (i, BL.pack $ map (gfEval i) polys)
 
 -- |
 -- Interpolates a list of (X, Y) points, returning the Y value at zero.
@@ -69,7 +68,7 @@ gfYIntercept points =
 -- False
 gfGenerate :: Word8 -> Word8 -> IO BL.ByteString
 gfGenerate y n = do
-    p <- getEntropy ((fromIntegral n :: Int)-1)
+    p <- getEntropy $ (fromIntegral n :: Int) - 1
     if BL.last p == 0 -- the Nth term can't be zero
         then gfGenerate y n
         else return $ BL.cons y p
