@@ -31,16 +31,17 @@ combine shares =
 --
 -- >>> let secret = Data.ByteString.Char8.pack "hello world"
 -- >>> let shares = split 5 3 secret
--- >>> let trim = Map.filterWithKey (\k _ -> k < 4)
--- >>> fmap (combine . trim) shares
+-- >>> fmap (combine . Map.filterWithKey (\k _ -> k < 4)) shares
 -- "hello world"
+-- >>> fmap ((== secret) . combine . Map.filterWithKey (\k _ -> k > 3)) shares
+-- False
 split :: Word8 -> Word8 -> BL.ByteString -> IO (Map.Map Word8 BL.ByteString)
 split = gfSplit getEntropy
 
 -- | Pure function to split a secret.
 gfSplit :: (Monad m) => (Int -> m BL.ByteString) -> Word8 -> Word8 -> BL.ByteString -> m (Map.Map Word8 BL.ByteString)
 gfSplit gen n k secret = do
-    polys <- sequence [gfGenerate gen b (k - 1) | b <- BL.unpack secret]
+    polys <- sequence [gfGenerate gen b k | b <- BL.unpack secret]
     return $ Map.fromList $ map (encode polys) [1..n]
     where
         encode polys i = (i, BL.pack $ map (gfEval i) polys)
