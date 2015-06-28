@@ -57,11 +57,11 @@ import           System.Entropy
 -- |
 -- Combines a map of share IDs to share values into the original secret.
 --
--- >>> let a = (1 :: Word8, BL.pack [64, 163, 216, 189, 193])
--- >>> let b = (3 :: Word8, BL.pack [194, 250, 117, 212, 82])
--- >>> let c = (5 :: Word8, BL.pack [95, 17, 153, 111, 252])
+-- >>> let a = (1 :: Word8, B.pack [64, 163, 216, 189, 193])
+-- >>> let b = (3 :: Word8, B.pack [194, 250, 117, 212, 82])
+-- >>> let c = (5 :: Word8, B.pack [95, 17, 153, 111, 252])
 -- >>> let shares = Map.fromList [a, b, c]
--- >>> BL.unpack $ combine shares
+-- >>> B.unpack $ combine shares
 -- [1,2,3,4,5]
 combine :: Map.Map Word8 B.ByteString -> B.ByteString
 combine shares =
@@ -118,8 +118,8 @@ gfYIntercept points =
 -- |
 -- Generate a random n-degree polynomial.
 --
--- >>> instance Generator Maybe where generate n = Just (BL.pack $ take n $ repeat 65)
--- >>> gfGenerate 212 5 :: Maybe BL.ByteString
+-- >>> instance Generator Maybe where generate n = Just (B.pack $ take n $ repeat 65)
+-- >>> gfGenerate 212 5 :: Maybe B.ByteString
 -- Just "\212AAAA"
 gfGenerate :: (Generator m) => Word8 -> Word8 -> m B.ByteString
 gfGenerate y n = do
@@ -131,7 +131,7 @@ gfGenerate y n = do
 -- |
 -- Evaluate the GF(256) polynomial.
 --
--- >>> gfEval 2 $ BL.pack [1, 0, 2, 3]
+-- >>> gfEval 2 $ B.pack [1, 0, 2, 3]
 -- 17
 gfEval :: Word8 -> B.ByteString -> Word8
 {-# INLINE gfEval #-}
