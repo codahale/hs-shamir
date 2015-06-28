@@ -58,9 +58,9 @@ import           System.Entropy
 -- |
 -- Combines a map of share IDs to share values into the original secret.
 --
--- >>> let a = (1 :: Word8, B.pack [64, 163, 216, 189, 193])
--- >>> let b = (3 :: Word8, B.pack [194, 250, 117, 212, 82])
--- >>> let c = (5 :: Word8, B.pack [95, 17, 153, 111, 252])
+-- >>> let a = (1, B.pack [64, 163, 216, 189, 193])
+-- >>> let b = (3, B.pack [194, 250, 117, 212, 82])
+-- >>> let c = (5, B.pack [95, 17, 153, 111, 252])
 -- >>> let shares = Map.fromList [a, b, c]
 -- >>> B.unpack $ combine shares
 -- [1,2,3,4,5]
@@ -88,9 +88,11 @@ instance Generator IO where
 --
 -- >>> let secret = Data.ByteString.Char8.pack "hello world"
 -- >>> let shares = split 5 3 secret
--- >>> fmap (combine . Map.filterWithKey (\k _ -> k < 4)) shares
+-- >>> Map.size <$> shares
+-- 5
+-- >>> combine . Map.filterWithKey (\k _ -> k < 4) <$> shares
 -- "hello world"
--- >>> fmap ((== secret) . combine . Map.filterWithKey (\k _ -> k > 3)) shares
+-- >>> (== secret) . combine . Map.filterWithKey (\k _ -> k > 3) <$> shares
 -- False
 split :: (Generator m) => Word8 -> Word8 -> B.ByteString -> m (Map.Map Word8 B.ByteString)
 split n k secret = do
