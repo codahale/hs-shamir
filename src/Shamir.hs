@@ -1,4 +1,4 @@
-module Shamir (split, combine) where
+module Shamir (Generator(generate), split, combine) where
 
 import           Data.Array.Base
 import           Data.Bits
@@ -25,6 +25,15 @@ combine shares =
          BL.unpack)
         (BL.transpose $ Map.elems shares)
 
+-- | Generates random data monadically.
+class Monad m => Generator m where
+    -- | Generates a random N-byte string.
+    generate :: Int -> m BL.ByteString
+
+-- | Generates random data using the Entropy package.
+instance Generator IO where
+    generate = getEntropy
+
 -- |
 -- Splits a secret into N shares, of which K are required to re-combine. Returns
 -- a map of share IDs to share values.
@@ -35,13 +44,9 @@ combine shares =
 -- "hello world"
 -- >>> fmap ((== secret) . combine . Map.filterWithKey (\k _ -> k > 3)) shares
 -- False
-split :: Word8 -> Word8 -> BL.ByteString -> IO (Map.Map Word8 BL.ByteString)
-split = gfSplit getEntropy
-
--- | Pure function to split a secret.
-gfSplit :: (Monad m) => (Int -> m BL.ByteString) -> Word8 -> Word8 -> BL.ByteString -> m (Map.Map Word8 BL.ByteString)
-gfSplit gen n k secret = do
-    polys <- sequence [gfGenerate gen b k | b <- BL.unpack secret]
+split :: (Generator m) => Word8 -> Word8 -> BL.ByteString -> m (Map.Map Word8 BL.ByteString)
+split n k secret = do
+    polys <- sequence [gfGenerate b k | b <- BL.unpack secret]
     return $ Map.fromList $ map (encode polys) [1..n]
     where
         encode polys i = (i, BL.pack $ map (gfEval i) polys)
@@ -66,14 +71,14 @@ gfYIntercept points =
 -- |
 -- Generate a random n-degree polynomial.
 --
--- >>> let gen n = Just (BL.pack $ take n $ repeat 65)
--- >>> gfGenerate gen 212 5
+-- >>> instance Generator Maybe where generate n = Just (BL.pack $ take n $ repeat 65)
+-- >>> gfGenerate 212 5 :: Maybe BL.ByteString
 -- Just "\212AAAA"
-gfGenerate :: (Monad m) => (Int -> m BL.ByteString) -> Word8 -> Word8 -> m BL.ByteString
-gfGenerate gen y n = do
-    p <- gen $ (fromIntegral n :: Int) - 1
+gfGenerate :: (Generator m) => Word8 -> Word8 -> m BL.ByteString
+gfGenerate y n = do
+    p <- generate $ (fromIntegral n :: Int) - 1
     if BL.last p == 0 -- the Nth term can't be zero
-        then gfGenerate gen y n
+        then gfGenerate y n
         else return $ BL.cons y p
 
 -- |
