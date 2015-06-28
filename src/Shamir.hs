@@ -50,6 +50,7 @@ module Shamir (Generator(generate), split, combine) where
 import           Data.Array.Base
 import           Data.Bits
 import qualified Data.ByteString as B
+import Data.List (foldl')
 import qualified Data.Map.Strict as Map
 import           Data.Word
 import           System.Entropy
@@ -109,9 +110,9 @@ split n k secret = do
 -- 107
 gfYIntercept :: [(Word8,Word8)] -> Word8
 gfYIntercept points =
-    foldl outer 0 points
+    foldl' outer 0 points
     where
-        weight v ax = foldl (inner ax) 1 $ filter (/= v) points
+        weight v ax = foldl' (inner ax) 1 $ filter (/= v) points
         inner ax v (bx, _) = gfMul v $ gfDiv bx $ xor ax bx
         outer v (ax,ay) = xor v $ gfMul ay $ weight (ax,ay) ax
 
