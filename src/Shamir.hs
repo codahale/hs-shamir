@@ -49,7 +49,7 @@ module Shamir (Generator(generate), split, combine) where
 
 import           Data.Array.Base
 import           Data.Bits
-import qualified Data.ByteString as BL
+import qualified Data.ByteString as B
 import qualified Data.Map.Strict as Map
 import           Data.Word
 import           System.Entropy
@@ -63,19 +63,19 @@ import           System.Entropy
 -- >>> let shares = Map.fromList [a, b, c]
 -- >>> BL.unpack $ combine shares
 -- [1,2,3,4,5]
-combine :: Map.Map Word8 BL.ByteString -> BL.ByteString
+combine :: Map.Map Word8 B.ByteString -> B.ByteString
 combine shares =
-    BL.pack $
+    B.pack $
     map
         (gfYIntercept .
          zip (cycle $ Map.keys shares) .
-         BL.unpack)
-        (BL.transpose $ Map.elems shares)
+         B.unpack)
+        (B.transpose $ Map.elems shares)
 
 -- | Generates random data monadically.
 class Monad m => Generator m where
     -- | Generates a random N-byte string.
-    generate :: Int -> m BL.ByteString
+    generate :: Int -> m B.ByteString
 
 -- | Generates random data using the Entropy package.
 instance Generator IO where
@@ -91,12 +91,12 @@ instance Generator IO where
 -- "hello world"
 -- >>> fmap ((== secret) . combine . Map.filterWithKey (\k _ -> k > 3)) shares
 -- False
-split :: (Generator m) => Word8 -> Word8 -> BL.ByteString -> m (Map.Map Word8 BL.ByteString)
+split :: (Generator m) => Word8 -> Word8 -> B.ByteString -> m (Map.Map Word8 B.ByteString)
 split n k secret = do
-    polys <- sequence [gfGenerate b k | b <- BL.unpack secret]
+    polys <- sequence [gfGenerate b k | b <- B.unpack secret]
     return $ Map.fromList $ map (encode polys) [1..n]
     where
-        encode polys i = (i, BL.pack $ map (gfEval i) polys)
+        encode polys i = (i, B.pack $ map (gfEval i) polys)
 
 -- |
 -- Interpolates a list of (X, Y) points, returning the Y value at zero.
@@ -121,22 +121,22 @@ gfYIntercept points =
 -- >>> instance Generator Maybe where generate n = Just (BL.pack $ take n $ repeat 65)
 -- >>> gfGenerate 212 5 :: Maybe BL.ByteString
 -- Just "\212AAAA"
-gfGenerate :: (Generator m) => Word8 -> Word8 -> m BL.ByteString
+gfGenerate :: (Generator m) => Word8 -> Word8 -> m B.ByteString
 gfGenerate y n = do
     p <- generate $ (fromIntegral n :: Int) - 1
-    if BL.last p == 0 -- the Nth term can't be zero
+    if B.last p == 0 -- the Nth term can't be zero
         then gfGenerate y n
-        else return $ BL.cons y p
+        else return $ B.cons y p
 
 -- |
 -- Evaluate the GF(256) polynomial.
 --
 -- >>> gfEval 2 $ BL.pack [1, 0, 2, 3]
 -- 17
-gfEval :: Word8 -> BL.ByteString -> Word8
+gfEval :: Word8 -> B.ByteString -> Word8
 {-# INLINE gfEval #-}
 gfEval x =
-    BL.foldr (\v res -> xor v $ gfMul res x) 0
+    B.foldr (\v res -> xor v $ gfMul res x) 0
 
 -- |
 -- Multiple two GF(256) elements.
