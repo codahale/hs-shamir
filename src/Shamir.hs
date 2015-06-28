@@ -6,6 +6,27 @@ Shamir's Secret Sharing algorithm allows you to securely share a secret with @N@
 people, allowing the recovery of that secret if @K@ of those people combine
 their shares.
 
+== Example
+
+We start with a secret value. In this example, we use the string
+@"hello world"@, but 'Shamir' works for any bytestring.
+
+>>> let secret = Data.ByteString.Char8.pack "hello world"
+
+Using 'split', we generate five shares, of which three are required to recover
+the secret.
+
+>>> shares <- split 5 3 secret
+
+We select the first three shares, arbitrarily.
+
+>>> let subset = Map.filterWithKey (\k _ -> k < 4) shares
+
+Using `combine, we recover the original secret.
+
+>>> combine subset
+"hello world"
+
 == How It Works
 
 It begins by encoding a secret as a number (e.g., 42), and generating @N@ random
@@ -87,12 +108,12 @@ instance Generator IO where
 -- a map of share IDs to share values.
 --
 -- >>> let secret = Data.ByteString.Char8.pack "hello world"
--- >>> let shares = split 5 3 secret
--- >>> Map.size <$> shares
+-- >>> shares <- split 5 3 secret
+-- >>> Map.size shares
 -- 5
--- >>> combine . Map.filterWithKey (\k _ -> k < 4) <$> shares
+-- >>> (combine . Map.filterWithKey (\k _ -> k < 4)) shares
 -- "hello world"
--- >>> (== secret) . combine . Map.filterWithKey (\k _ -> k > 3) <$> shares
+-- >>> ((== secret) . combine . Map.filterWithKey (\k _ -> k > 3)) shares
 -- False
 split :: (Generator m) => Word8 -> Word8 -> B.ByteString -> m (Map.Map Word8 B.ByteString)
 split n k secret = do
