@@ -18,11 +18,15 @@ the secret.
 
 >>> shares <- split 5 3 secret
 
+'split' requires a 'Generator' typeclass; one is already provided for the 'IO'
+monad, backed by the 'entropy' package.
+/It is strongly recommended you use the provided implementation./
+
 We select the first three shares, arbitrarily.
 
 >>> let subset = Map.filterWithKey (\k _ -> k < 4) shares
 
-Using `combine, we recover the original secret.
+Using 'combine', we recover the original secret.
 
 >>> combine subset
 "hello world"
