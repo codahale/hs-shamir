@@ -208,6 +208,7 @@ gfDiv e a =
 -- 0x11b prime polynomial and 0x03 as generator
 
 gfExp :: Word8 -> Word8
+{-# INLINE gfExp #-}
 gfExp = (gfExpTable !)
 
 gfExpTable :: UArray Word8 Word8
@@ -238,6 +239,7 @@ gfExpTable =
         ]
 
 gfLog :: Word8 -> Int
+{-# INLINE gfLog #-}
 gfLog = (gfLogTable !)
 
 gfLogTable :: UArray Word8 Int
