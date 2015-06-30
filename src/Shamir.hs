@@ -122,8 +122,8 @@ split :: (Generator m) => Word8 -> Word8 -> B.ByteString -> m (Map.Map Word8 B.B
 split n k secret = do
     polys <- sequence [gfGenerate b k | b <- B.unpack secret]
     return $ Map.fromList $ map (encode polys) [1..n]
-    where
-        encode polys i = (i, B.pack $ map (gfEval i) polys)
+  where
+    encode polys i = (i, B.pack $ map (gfEval i) polys)
 
 -- |
 -- Interpolates a list of (X, Y) points, returning the Y value at zero.
@@ -137,10 +137,10 @@ split n k secret = do
 gfYIntercept :: [(Word8,Word8)] -> Word8
 gfYIntercept points =
     foldr outer 0 points
-    where
-        weight v ax = foldr (inner ax) 1 $ filter (/= v) points
-        inner ax (bx, _) v = gfMul v $ gfDiv bx $ xor ax bx
-        outer (ax,ay) v = xor v $ gfMul ay $ weight (ax,ay) ax
+  where
+    weight v ax = foldr (inner ax) 1 $ filter (/= v) points
+    inner ax (bx, _) v = gfMul v $ gfDiv bx $ xor ax bx
+    outer (ax,ay) v = xor v $ gfMul ay $ weight (ax,ay) ax
 
 -- |
 -- Generate a random n-degree polynomial.
