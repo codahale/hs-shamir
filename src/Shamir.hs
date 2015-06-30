@@ -163,9 +163,7 @@ gfGenerate y n = do
 gfEval :: Word8 -> B.ByteString -> Word8
 {-# INLINE gfEval #-}
 gfEval x =
-    B.foldr eval 0
-  where
-    eval v res = xor v $ gfMul res x
+    B.foldr ((. gfMul x) . xor) 0
 
 -- |
 -- Multiple two GF(256) elements.
