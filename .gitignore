@@ -13,3 +13,4 @@ cabal.config
 *.prof
 *.hp
 *.aux
+shamir.html
