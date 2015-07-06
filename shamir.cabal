@@ -29,3 +29,16 @@ test-suite doctests
 source-repository head
   type: git
   location: https://github.com/codahale/hs-shamir.git
+
+benchmark all
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   src bench
+  main-is:          BenchAll.hs
+  build-depends:    base,
+                    criterion,
+                    bytestring,
+                    array,
+                    containers,
+                    entropy
+  ghc-options:      -O2
+  default-language:    Haskell2010
