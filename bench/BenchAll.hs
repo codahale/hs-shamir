@@ -10,7 +10,7 @@ main =
         [ bench "split" $
           nfIO (split 5 3 secret)
         , bench "combine" $
-          whnf combine shares]
+          nf combine shares]
   where
     secret =
         C.pack "hello world"
