@@ -114,9 +114,9 @@ instance Generator IO where
 -- >>> shares <- split 5 3 secret
 -- >>> Map.size shares
 -- 5
--- >>> (combine . Map.filterWithKey (\k _ -> k < 4)) shares
+-- >>> (combine . Map.filterWithKey (\k _ -> k <= 3)) shares
 -- "hello world"
--- >>> ((== secret) . combine . Map.filterWithKey (\k _ -> k > 3)) shares
+-- >>> ((== secret) . combine . Map.filterWithKey (\k _ -> k < 3)) shares
 -- False
 split :: (Generator m) => Word8 -> Word8 -> B.ByteString -> m (Map.Map Word8 B.ByteString)
 split n k secret = do
