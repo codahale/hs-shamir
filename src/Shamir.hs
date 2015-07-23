@@ -161,9 +161,9 @@ gfGenerate y n = do
 -- >>> gfEval 2 $ B.pack [1, 0, 2, 3]
 -- 17
 gfEval :: Word8 -> B.ByteString -> Word8
-{-# INLINE gfEval #-}
 gfEval x =
     B.foldr ((. gfMul x) . xor) 0
+{-# INLINE gfEval #-}
 
 -- |
 -- Multiple two GF(256) elements.
@@ -175,7 +175,6 @@ gfEval x =
 -- >>> gfMul 133 5
 -- 167
 gfMul :: Word8 -> Word8 -> Word8
-{-# INLINE gfMul #-}
 gfMul 0 _  = 0
 gfMul _ 0  = 0
 gfMul e a =
@@ -183,6 +182,7 @@ gfMul e a =
   where
     x = gfLog e
     y = gfLog a
+{-# INLINE gfMul #-}
 
 -- |
 -- Divide two GF(256) elements.
@@ -196,7 +196,6 @@ gfMul e a =
 -- >>> gfDiv 22 192
 -- 138
 gfDiv :: Word8 -> Word8 -> Word8
-{-# INLINE gfDiv #-}
 gfDiv 0 _ = 0
 gfDiv _ 0 = undefined
 gfDiv e a =
@@ -204,12 +203,13 @@ gfDiv e a =
   where
     x = gfLog e
     y = gfLog a
+{-# INLINE gfDiv #-}
 
 -- 0x11b prime polynomial and 0x03 as generator
 
 gfExp :: Word8 -> Word8
-{-# INLINE gfExp #-}
 gfExp = (gfExpTable !)
+{-# INLINE gfExp #-}
 
 gfExpTable :: UArray Word8 Word8
 gfExpTable =
@@ -239,8 +239,8 @@ gfExpTable =
         ]
 
 gfLog :: Word8 -> Int
-{-# INLINE gfLog #-}
 gfLog = (gfLogTable !)
+{-# INLINE gfLog #-}
 
 gfLogTable :: UArray Word8 Int
 gfLogTable =
